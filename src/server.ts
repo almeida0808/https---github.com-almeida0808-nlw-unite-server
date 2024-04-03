@@ -1,12 +1,15 @@
-import fastify from 'fastify'
-const app = fastify()
+import fastify from "fastify";
+import { z } from "zod";
+const app = fastify();
 
-app.get("/",()=>{return 'vc fez um get'})
+app.post("/events", (request, response) => {
+  console.log(request.body);
+  
+   "oi mundo";
+});
 
+const PORT = 4444;
 
-
-const PORT = 4444
-
-app.listen({port: PORT}).then(() => {
-    console.log(`Server is running on Port ${PORT}`)
-})
+app.listen({ port: PORT }).then(() => {
+  console.log(`Server is running on Port ${PORT}`);
+});
