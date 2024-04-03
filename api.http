@@ -1,0 +1,8 @@
+POST http://localhost:4444/events
+Content-Type: application/json
+
+{
+	"title":"Beach Oakey",
+	"details":"event",
+	"maximumClients":"3323"
+}
