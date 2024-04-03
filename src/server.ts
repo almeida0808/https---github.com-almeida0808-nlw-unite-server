@@ -1,6 +1,7 @@
 import fastify from "fastify";
 import { z } from "zod";
 import { PrismaClient } from "@prisma/client";
+import { createSlug } from "./utils/CreateSlug";
 const app = fastify();
 
 const prisma = new PrismaClient({
@@ -15,14 +16,30 @@ app.post("/events", async (request, response) => {
     maximumClients: z.number().int().positive().nullable(), // tem que ser um número, inteiro, positivo, porem é opcional
   });
 
-  const data = createEventsSchema.parse(request.body);
+  const { title, details, maximumClients } = createEventsSchema.parse(
+    request.body
+  );
+  const slug = createSlug(title);
 
+  // caso não encontre um slug existente, ele retorna null
+  const eventWithSameSlug = await prisma.event.findUnique({
+    // findUnique busca um campo unico na nossa tabela
+    where: { slug },
+  });
+
+  if (eventWithSameSlug !== null) {
+    // caso a resposta seja diferente de null return esse error
+    response.status(400);
+    throw new Error(
+      "Ops.. Já existe um evento com esse nome, tente novamente."
+    );
+  }
   const event = await prisma.event.create({
     data: {
-      title: data.title,
-      details: data.details,
-      maximumClients: data.maximumClients,
-      slug: new Date().toISOString(),
+      title,
+      details,
+      maximumClients,
+      slug,
     },
   });
   return response.status(201).send({ eventId: event.id });
