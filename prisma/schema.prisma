@@ -28,8 +28,19 @@ model Client {
 
   eventId String @map("event_id")
 
-  event Event @relation(fields: [eventId], references: [id])
+  event   Event    @relation(fields: [eventId], references: [id])
+  CheckIn CheckIn?
 
   @@unique([eventId, email])
   @@map("clients")
+}
+
+model CheckIn {
+  id        Int      @id @default(autoincrement())
+  createdAt DateTime @default(now()) @map("created_at")
+
+  client   Client @relation(fields: [clientId], references: [id])
+  clientId Int    @unique @map("client_id")
+
+  @@map("check_ins")
 }

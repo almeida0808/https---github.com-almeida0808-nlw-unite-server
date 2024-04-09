@@ -6,3 +6,7 @@ Content-Type: application/json
 	"details":"event",
 	"maximumClients":34323
 }
+
+
+###
+GET  http://localhost:4444/events/dea7a144-f0a0-4295-8491-25e5e0562bce/clients
