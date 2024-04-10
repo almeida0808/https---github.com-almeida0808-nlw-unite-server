@@ -8,6 +8,8 @@ export async function getEventClients(app: FastifyInstance) {
     "/events/:eventId/clients",
     {
       schema: {
+        summary: "show events from clients",
+        tags: ["events"],
         params: z.object({
           eventId: z.string().uuid(),
         }),
@@ -15,7 +17,18 @@ export async function getEventClients(app: FastifyInstance) {
           query: z.string().nullable(),
           pageIndex: z.string().nullable().default("0").transform(Number),
         }),
-        response: {},
+        response: {
+          200: z.object({
+            clients: z.array(
+              z.object({
+                id: z.number(),
+                name: z.string(),
+                email: z.string().email(),
+                createdAt: z.date().nullable(),
+              })
+            ),
+          }),
+        },
       },
     },
     async (request, response) => {
@@ -33,11 +46,21 @@ export async function getEventClients(app: FastifyInstance) {
             },
           },
         },
-        where: {
-          eventId,
-        },
+        where: query
+          ? {
+              eventId,
+              name: {
+                contains: query,
+              },
+            }
+          : {
+              eventId,
+            },
         take: 10,
         skip: pageIndex * 10,
+        orderBy: {
+          createdAt: "desc",
+        },
       });
       return response.send({
         clients: clients.map((clients) => {
@@ -46,7 +69,7 @@ export async function getEventClients(app: FastifyInstance) {
             name: clients.name,
             email: clients.email,
             createdAt: clients.createdAt,
-            checkedInAt: clients.CheckIn?.createdAt,
+            checkedInAt: clients.CheckIn?.createdAt ?? null,
           };
         }),
       });

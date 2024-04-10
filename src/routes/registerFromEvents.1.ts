@@ -2,13 +2,15 @@ import { FastifyInstance } from "fastify";
 import { ZodTypeProvider } from "fastify-type-provider-zod";
 import { z } from "zod";
 import { prisma } from "../lib/prisma";
-import { error } from "console";
+import { BadRequest } from "./_errors/badRequest";
 
 export async function registerFromEvents(app: FastifyInstance) {
   app.withTypeProvider<ZodTypeProvider>().post(
     "/events/:eventId/clients",
     {
       schema: {
+        summary: "show clients register from events",
+        tags: ["events"],
         body: z.object({
           name: z.string().min(3),
           email: z.string().email(),
@@ -34,7 +36,7 @@ export async function registerFromEvents(app: FastifyInstance) {
       });
 
       if (clientFromEmail !== null) {
-        throw new Error("Este Usuário ja foi cadastrado neste evento.");
+        throw new BadRequest("Este Usuário ja foi cadastrado neste evento.");
       }
 
       const [event, amountOfClientsForEvents] = await Promise.all([
@@ -57,7 +59,9 @@ export async function registerFromEvents(app: FastifyInstance) {
         event?.maximumClients &&
         amountOfClientsForEvents >= event.maximumClients
       ) {
-        throw new Error("Desculpe, as vagas para esse evento se esgotaram.");
+        throw new BadRequest(
+          "Desculpe, as vagas para esse evento se esgotaram."
+        );
       }
       const client = await prisma.client.create({
         data: {

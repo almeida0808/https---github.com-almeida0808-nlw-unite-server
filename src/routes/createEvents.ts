@@ -3,12 +3,15 @@ import { z } from "zod";
 import { createSlug } from "../utils/CreateSlug";
 import { prisma } from "../lib/prisma";
 import { FastifyInstance } from "fastify";
+import { BadRequest } from "./_errors/badRequest";
 
 export async function CreateEvent(app: FastifyInstance) {
   app.withTypeProvider<ZodTypeProvider>().post(
     "/events",
     {
       schema: {
+        summary: "Create an event",
+        tags: ["events"],
         body: z.object({
           // faz algumas validações pra criar um evento no banco de dados
           title: z.string().min(4), // o title tem que ser uma string com no min 4 caracteres
@@ -36,7 +39,7 @@ export async function CreateEvent(app: FastifyInstance) {
       if (eventWithSameSlug !== null) {
         // caso a resposta seja diferente de null return esse error
         response.status(400);
-        throw new Error(
+        throw new BadRequest(
           "Ops.. Já existe um evento com esse nome, tente novamente."
         );
       }

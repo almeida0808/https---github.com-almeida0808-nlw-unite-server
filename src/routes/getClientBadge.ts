@@ -2,26 +2,29 @@ import { FastifyInstance } from "fastify";
 import { ZodTypeProvider } from "fastify-type-provider-zod";
 import { number, object, string, z } from "zod";
 import { prisma } from "../lib/prisma";
+import { BadRequest } from "./_errors/badRequest";
 
 export async function getClientBadge(app: FastifyInstance) {
   app.withTypeProvider<ZodTypeProvider>().get(
     "/clients/:clientId/badge",
     {
       schema: {
+        summary: "get badge clients",
+        tags: ["clients"],
         params: z.object({
           clientId: z.string().transform(Number),
         }),
-        response:{
-200: z.object({
-  badge: z.object({
-    name: z.string(),
-    email: z.string().email(),
-    id: z.number().int(),
-    eventTitle: z.string(),
-    checkInURL: z.string().url()
-  }),
-})
-        }
+        response: {
+          200: z.object({
+            badge: z.object({
+              name: z.string(),
+              email: z.string().email(),
+              id: z.number().int(),
+              eventTitle: z.string(),
+              checkInURL: z.string().url(),
+            }),
+          }),
+        },
       },
     },
     async (request, response) => {
@@ -43,22 +46,21 @@ export async function getClientBadge(app: FastifyInstance) {
       });
 
       if (client === null) {
-        throw new Error("Esse usuário não existe.");
+        throw new BadRequest("Esse usuário não existe.");
       }
 
-      
-      const baseURL = `${request.protocol}://${request.hostname}`
-      console.log( baseURL )
+      const baseURL = `${request.protocol}://${request.hostname}`;
+      console.log(baseURL);
 
-      const checkInURL = new URL(`/clients/${client.id}/check-in`, baseURL)
-      
+      const checkInURL = new URL(`/clients/${client.id}/check-in`, baseURL);
+
       return response.send({
         badge: {
           name: client?.name,
           email: client?.email,
           id: client?.id,
           eventTitle: client.event.title,
-          checkInURL: checkInURL.toString()
+          checkInURL: checkInURL.toString(),
         },
       });
     }

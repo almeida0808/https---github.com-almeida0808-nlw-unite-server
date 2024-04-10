@@ -2,12 +2,15 @@ import { FastifyInstance } from "fastify";
 import { ZodTypeProvider } from "fastify-type-provider-zod";
 import { nullable, string, z } from "zod";
 import { prisma } from "../lib/prisma";
+import { BadRequest } from "./_errors/badRequest";
 
 export async function getEvent(app: FastifyInstance) {
   app.withTypeProvider<ZodTypeProvider>().get(
     "/events/:eventId",
     {
       schema: {
+        summary: "Get events",
+        tags: ["events"],
         params: z.object({
           eventId: z.string().uuid(),
         }),
@@ -35,7 +38,7 @@ export async function getEvent(app: FastifyInstance) {
       });
 
       if (event === null) {
-        throw new Error("Ops... Este evento não existe.");
+        throw new BadRequest("Ops... Este evento não existe.");
       }
 
       const VagasDisponiveis = `${event._count.clients}/${event.maximumClients}`;
