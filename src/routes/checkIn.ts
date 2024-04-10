@@ -4,8 +4,8 @@ import z from "zod";
 import { prisma } from "../lib/prisma";
 
 export async function checkIn(app: FastifyInstance) {
-  app.withTypeProvider<ZodTypeProvider>().get(
-    "/clients/:clientId/check-in",
+  app.withTypeProvider<ZodTypeProvider>()
+  .get("/clients/:clientId/check-in",
     {
       schema: {
         params: z.object({
